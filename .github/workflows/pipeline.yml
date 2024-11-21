@@ -31,7 +31,7 @@ jobs:
 
       - name: Unit tests  
         working-directory: angular-docker
-        run: ng test
+        run: npm test --watch=false --browsers=ChromeHeadless
 
       - name: Scan Sonarqube
         run: |
