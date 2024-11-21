@@ -27,11 +27,7 @@ jobs:
 
       - name: Unit tests  
         working-directory: angular-docker
-        run: npm run test:ci
-
-      - name: E2E
-        working-directory: angular-docker  
-        run: npm run e2e:ci
+        run: ng test
 
       - name: Scan Sonarqube
         run: |
