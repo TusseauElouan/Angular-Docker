@@ -83,8 +83,10 @@ jobs:
     steps:
       - name: Deploy to Production
         run: |
-          ssh ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} << 'EOF'
+          ssh ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}
+          "
           docker stop angular-prod || true
           docker rm angular-prod || true
-          docker run -d -p 9003:9003 --network devops --name angular-prod --pull always ${{ secrets.DOCKER_TAG }}
-          EOF
+          docker run -d -p 9003:9003 --network devops --name angular-prod --pull-always ${{ secrets.DOCKER_TAG }}
+          exit
+          "
