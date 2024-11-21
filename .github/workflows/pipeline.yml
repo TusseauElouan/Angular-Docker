@@ -16,31 +16,34 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Use Node.js  
-        uses: actions/setup-node@v4.1.0  
-        with:  
+      - name: Use Node.js
+        uses: actions/setup-node@v4.1.0
+        with:
           node-version: '18.x'
 
-      - name: Install nmp dependencies
+      - name: Install dependencies
         working-directory: angular-docker
-        run: | 
-            npm install
-            apt install ng-common -y
-            
-
-
-      - name: Unit tests  
-        working-directory: angular-docker
-        run: npm test --watch=false --browsers=ChromeHeadless
-
-      - name: Scan Sonarqube
         run: |
-           sonar-scanner \
-           -Dsonar.projectKey="Angular" \
-           -Dsonar.sources=. \
-           -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-           -Dsonar.login=${{ secrets.SONAR_TOKEN }} 
-      - name: Sonarqube Quality Gate
+          npm ci
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+
+      - name: Unit tests
+        working-directory: angular-docker
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: |
+          npm test -- --watch=false --browsers=ChromeHeadless
+
+      - name: Scan with SonarQube
+        run: |
+          sonar-scanner \
+          -Dsonar.projectKey="Angular" \
+          -Dsonar.sources=. \
+          -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+
+      - name: SonarQube Quality Gate
         uses: sonarsource/sonarqube-quality-gate-action@master
         timeout-minutes: 5
         with:
@@ -48,6 +51,7 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
   build:
     runs-on: ubuntu-latest
     needs: tests
@@ -71,23 +75,22 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD_WRITE }}
 
-      - name: Build and push Docker 
+      - name: Build and push Docker
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
           tags: ${{ secrets.DOCKER_TAG }}
+
   deploy:
     needs: build
     runs-on: self-hosted
 
     steps:
-      - name: Connexion et Déploiment
-        run: >
-          ssh ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }}
-          "
+      - name: Deploy to Production
+        run: |
+          ssh ${{ secrets.SSH_USERNAME }}@${{ secrets.SSH_HOST }} << 'EOF'
           docker stop angular-prod || true
           docker rm angular-prod || true
-          docker run -d -p 9003:9001 --network devops --name angular-prod --pull-always ${{ secrets.DOCKER_TAG }}
-          exit
-          "
+          docker run -d -p 9003:9003 --network devops --name angular-prod --pull always ${{ secrets.DOCKER_TAG }}
+          EOF
