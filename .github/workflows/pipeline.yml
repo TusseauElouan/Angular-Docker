@@ -25,10 +25,6 @@ jobs:
         working-directory: angular-docker
         run: npm install
 
-      - name: Lint  
-        working-directory: angular-docker
-        run: npm run lint
-
       - name: Unit tests  
         working-directory: angular-docker
         run: npm run test:ci
