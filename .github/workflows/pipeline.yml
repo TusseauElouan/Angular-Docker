@@ -23,7 +23,10 @@ jobs:
 
       - name: Install nmp dependencies
         working-directory: angular-docker
-        run: npm install
+        run: | 
+            npm install
+            apt install ng-common
+
 
       - name: Unit tests  
         working-directory: angular-docker
