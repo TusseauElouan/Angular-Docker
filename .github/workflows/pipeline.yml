@@ -23,21 +23,13 @@ jobs:
 
       - name: Install dependencies
         working-directory: angular-docker
-        run: |
-            npm ci
-            sudo apt-get update
-            sudo apt-get install -y wget gnupg
-            wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-            echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
-            sudo apt-get update
-            sudo apt-get install -y google-chrome-stable
+        run: npm install
 
       - name: Unit tests
         working-directory: angular-docker
         env:
           CHROME_BIN: /usr/bin/google-chrome
-        run: |
-          npm test -- --watch=false --browsers=ChromeHeadless
+        run: ng test
 
       - name: Scan with SonarQube
         run: |
