@@ -87,6 +87,6 @@ jobs:
           "
           docker stop angular-prod || true
           docker rm angular-prod || true
-          docker run -d -p 9003:9003 --network devops --name angular-prod --pull-always ${{ secrets.DOCKER_TAG }}
+          docker run -d -p 9003:9003 --network devops --name angular-prod --pull always ${{ secrets.DOCKER_TAG }}
           exit
           "
